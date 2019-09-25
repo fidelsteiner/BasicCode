@@ -1,12 +1,14 @@
 ################################################################################
 # SR50 data cleaner function - create daily time series of snow depth
+# Based on original code from Maxime Litt to quality check snow depth data
 # 
 # SR50.R
 #
 # ReadMe:
 # Uses raw SR50 data from csv files (format:Date,Time,T,RH,SDQ,SD,WS columns necessary with these headers) and filters data to produce daily snow height vectors
 #
-# requires TSaggregate Code from the d2EB package (check at https://github.com/fidelsteiner)
+# 
+# requires TSaggregate Code from the d2EB package (check at https://github.com/fidelsteiner/BasicCode/tree/master/timeseriesAnalysis )
 # Output:
 # .csv file with daily SD values
 #
