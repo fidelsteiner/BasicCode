@@ -47,7 +47,7 @@ TSaggregate <- function(TS,TimStr,timStep,yearTS,aggrmode){
   # Aggregate to 60 min timesteps
   } else if(timStep == 60){
     minVal <- minute(TimStr)*0
-  
+
     # Find unique lines
     timBind<-(cbind(year(TimStr),month(TimStr),lubridate::day(TimStr),hour(TimStr),minVal))
     timBinddf<-data.frame(timBind)
