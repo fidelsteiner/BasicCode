@@ -4,6 +4,10 @@
 # AWS_Langtang_process.R
 #
 # ReadMe: 
+#
+# The code is specific for the Langtang catchment where three full AWS are operational (manuscript in preparation)
+# Since each station has slightly different setups
+#
 # (1) The original .txt file needs to be saved as a csv file, with only 1 hearder row which denotes the different variables
 # (2) For incoming SW radiation only negative and NaN values are corrected; unrealistic high values have to be sorted separately
 # (3) For outgoing SW radiation only negative, NaN and values higher than incoming are corrected
@@ -11,7 +15,7 @@
 #
 # Reads in the raw 10/60 min file from the AWS and makes the final AWS data file (in 60 min)
 # Created:          2018/02/05
-# Latest Revision:  2017/02/05
+# Latest Revision:  2020/02/05
 #
 # Jakob F Steiner| PhD candidate | Faculty of Geosciences | Universiteit Utrecht | Princetonlaan 8a, 3584 CB Utrecht 
 # Vening Meinesz building, room 4.30 | P.O. Box 80.115, 3508 TC Utrecht | j.f.steiner@uu.nl | www.uu.nl/staff/jfsteiner | www.mountainhydrology.org 
@@ -53,16 +57,18 @@ datRaw <- read.table(path_kya&'\\'&raw10minFile,header = T, sep = ",", dec = "."
 timestr <- as.POSIXct(datRaw$TIMESTAMP, format="%m/%d/%Y  %H:%M")
 
 # Note that for Kyanjing the radiation components in the raw 10 min data are wrongly identified (up==down and down==up)
-BVOLhourly <- TSaggregate(datRaw$BattV_Min,timestr,60,5,'mean')   # BVOL, Battery status [V] 
+BVOLhourly <- TSaggregate(datRaw$BattV_Min,timestr,60,5,'mean')   # BVOL, Battery status [V]
+datRaw$Bucket_RT[datRaw$Bucket_RT<=0] <- NA
 BCONhourly <- TSaggregate(datRaw$Bucket_RT,timestr,60,5,'mean')   # BCON, Bucket content [mm]
 PVOLhourly <- TSaggregate(datRaw$Accumulated_RT_NRT_Tot,timestr,60,5,'sum') # PVOL, insttantaneous precipitation, mm
 TAIRhourly <- TSaggregate(datRaw$AirTC_Avg,timestr,60,5,'mean')   # TAIR, mean air temperature, [degC]
 datRaw$RH_Avg[datRaw$RH_Avg>100] <- 100
-datRaw$RH_Avg[datRaw$RH_Avg<0] <- 0
+datRaw$RH_Avg[datRaw$RH_Avg<=0] <- NA
 RHhourly <- TSaggregate(datRaw$RH_Avg,timestr,60,5,'mean')   # RH, mean air rel humidity, [%]
 TCNR4hourly <- TSaggregate(datRaw$CNR4TC_Avg,timestr,60,5,'mean')   # TCNR4, mean CNR4 temperature, [degC]
 
 datRaw$SUp_Avg[datRaw$SUp_Avg<0]<-0
+datRaw$SUp_Avg[datRaw$SUp_Avg>2000] <- NA
 datRaw$SDn_Avg[datRaw$SDn_Avg<0]<-0
 datRaw$SDn_Avg[datRaw$SDn_Avg>datRaw$SUp_Avg] <- datRaw$SUp_Avg[datRaw$SDn_Avg>datRaw$SUp_Avg]
 KINChourly <- TSaggregate(datRaw$SUp_Avg,timestr,60,5,'mean')   # KINC, incoming SW radiation, [W m-2]
@@ -123,7 +129,7 @@ matchAWSdata <- match(TAIRhourly[,1],SR50hourly[,1])
 Date <- as.Date(as.POSIXct(TAIRhourly[,1],origin='1970-01-01'))
 Time <- strftime(as.POSIXct(TAIRhourly[,1],origin='1970-01-01'),format="%H:%M:%S")
 
-expData <- data.frame(matrix(ncol = 19, nrow = length(Date)))
+expData <- data.frame(matrix(ncol = 0, nrow = length(Date)))
 expData$DATE <- Date
 expData$TIME <- Time
 expData$BVOL <- BVOLhourly[,2]
@@ -131,8 +137,19 @@ expData$PVOL <- PVOLhourly[,2]
 expData$BCON <- BCONhourly[,2]
 expData$TAIR <- TAIRhourly[,2]
 expData$RH <- RHhourly[,2]
-expData$RHCOR <- RHhourly[,2]
+expData$RHCOR <- RHhourly[,2]         # No actual separate data
 expData$TCNR4 <- TCNR4hourly[,2]
+expData$KINC <- KINChourly[,2]
+expData$KUPW <- KUPWhourly[,2]
+expData$LINC <- LINChourly[,2]
+expData$LUPW <- LUPWhourly[,2]
+expData$TSOIL <- TAIRhourly[,2] * NA  # No actual separate data
+expData$LSD <- TAIRhourly[,2] * NA    # No actual separate data
+expData$PRES <- PREShourly[,2]
+expData$WSPD <- WSPDhourly[,2]
+expData$WSPDmax <- WSPDmaxhourly[,2]
+expData$WINDDIR <- WINDDIRhourly[,2]
+expData$SR50 <- SR50hourly[matchAWSdata,2]
 
 
-write.csv(expData,file=path_kya&'//final.csv')
+write.csv(expData,file=path_kya&'//finalKyanjing2019.csv',, row.names=FALSE)
