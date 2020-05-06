@@ -62,20 +62,22 @@ TSaggregate <- function(TS,TimStr,timStep,timShift,aggrmode){
 
     if(timShift>0){       # Version where hourly aggregates are different than simply aggregating to the full hour as given in the timestring
   # shift the time vector
+
+  TimStr <- TimStr + 1*timShift*10*60
   hourdata <- hour(TimStr)
-  hourdata <- hourdata[-(1:timShift)]
+  #hourdata <- hourdata[-(1:timShift)]
 
   daydata <- lubridate::day(TimStr)
-  daydata <- daydata[-(1:timShift)]
+  #daydata <- daydata[-(1:timShift)]
   
   yeardata <- year(TimStr)
-  yeardata <- yeardata[1:(length(yeardata)-timShift)]
+  #yeardata <- yeardata[1:(length(yeardata)-timShift)]
   
   monthdata <- month(TimStr)
-  monthdata <- monthdata[1:(length(monthdata)-timShift)]
+  #monthdata <- monthdata[1:(length(monthdata)-timShift)]
   
-  minVal <- minVal[1:(length(minVal)-timShift)]
-  
+  #minVal <- minVal[1:(length(minVal)-timShift)]
+
   # Find unique lines
   timBind<-(cbind(yeardata,monthdata,daydata,hourdata,minVal))
   timBinddf<-data.frame(timBind)
@@ -85,12 +87,11 @@ TSaggregate <- function(TS,TimStr,timStep,timShift,aggrmode){
   DT <- data.table(timBinddf, key="yeardata,monthdata,daydata,hourdata,minVal")
   DT[, Cluster_ID:=.GRP, by=key(DT)]
   DT<-as.data.frame(DT)
-  
-  TS_short <- TS[1:(length(TS)-timShift)]
+
   # Aggregation of data
   timVec <- ISOdatetime(df2[,1],df2[,2],df2[,3],df2[,4],df2[,5],rep(0,dim(df2)[1]))
-  valVec <- aggregate(TS_short,list(DT[,6]),aggrmode,na.rm=T)
-  valVec_sd <- aggregate(TS_short,list(DT[,6]),sd,na.rm=T)
+  valVec <- aggregate(TS,list(DT[,6]),aggrmode,na.rm=T)
+  valVec_sd <- aggregate(TS,list(DT[,6]),sd,na.rm=T)
   valVec$x[is.nan(valVec$x)]<-NA
   TSaggregate <- cbind(timVec ,valVec[,2],valVec_sd[,2])  
   
