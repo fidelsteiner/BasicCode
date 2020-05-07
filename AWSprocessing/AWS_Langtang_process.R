@@ -52,7 +52,7 @@ winddirmean <- function(ws,wd,timestr,timStep,timShift){
   windvec[,2] <- windvec[,2]*NA
 
   windvec[umean[,2]>0,2] <- (90-180/pi*atan(umean[umean[,2]>0,2]/vmean[umean[,2]>0,2])+180)
-  windvec[umean[,2]<=0,2] <- (90-180/pi*atan(umean[umean[,2]<=0,2]/vmean[umean[,2]<=0,2])+180)
+  windvec[umean[,2]<=0,2] <- (90-180/pi*atan(umean[umean[,2]<=0,2]/vmean[umean[,2]<=0,2]))
   windvec[,3] <- windvec[,3]*NA
   return(windvec)
 }
@@ -85,7 +85,7 @@ TCNR4hourly <- TSaggregate(datRaw$CNR4TC_Avg,timestr,60,5,'mean')   # TCNR4, mea
 datRaw$SUp_Avg[datRaw$SUp_Avg<0]<-0
 datRaw$SUp_Avg[datRaw$SUp_Avg>2000] <- NA
 datRaw$SDn_Avg[datRaw$SDn_Avg<0]<-0
-datRaw$SDn_Avg[datRaw$SDn_Avg>datRaw$SUp_Avg] <- datRaw$SUp_Avg[datRaw$SDn_Avg>datRaw$SUp_Avg]
+#datRaw$SDn_Avg[datRaw$SDn_Avg>datRaw$SUp_Avg] <- datRaw$SUp_Avg[datRaw$SDn_Avg>datRaw$SUp_Avg]
 KINChourly <- TSaggregate(datRaw$SUp_Avg,timestr,60,5,'mean')   # KINC, incoming SW radiation, [W m-2]
 KUPWhourly <- TSaggregate(datRaw$SDn_Avg,timestr,60,5,'mean')   # KUPW, outgoing SW radiation, [W m-2]
 LINChourly <- TSaggregate(datRaw$LUpCo_Avg,timestr,60,5,'mean')   # LINC, incoming LW radiation, [W m-2]
@@ -187,20 +187,25 @@ datRaw$Air_RH_Avg[datRaw$Air_RH_Avg<=0] <- NA
 RHhourly <- TSaggregate(datRaw$Air_RH_Avg,timestr,60,5,'mean')   # RH, mean air rel humidity, [%]
 TCNR4hourly <- TSaggregate(datRaw$CNR4_T_C_Avg,timestr,60,5,'mean')   # TCNR4, mean CNR4 temperature, [degC]
 
+datRaw$short_up_Avg[abs(datRaw$short_up_Avg)>2000] <- NA # to catch NA values saved as -7999
+datRaw$short_dn_Avg[abs(datRaw$short_dn_Avg)>2000] <- NA # to catch NA values saved as -7999
 datRaw$short_up_Avg[datRaw$short_up_Avg<0]<-0
 datRaw$short_up_Avg[datRaw$short_up_Avg>2000] <- NA
 datRaw$short_dn_Avg[datRaw$short_dn_Avg<0]<-0
-datRaw$short_dn_Avg[datRaw$short_dn_Avg>datRaw$short_up_Avg] <- datRaw$short_up_Avg[datRaw$short_dn_Avg>datRaw$short_up_Avg]
 KINChourly <- TSaggregate(datRaw$short_up_Avg,timestr,60,5,'mean')   # KINC, incoming SW radiation, [W m-2]
 KUPWhourly <- TSaggregate(datRaw$short_dn_Avg,timestr,60,5,'mean')   # KUPW, outgoing SW radiation, [W m-2]
 LINChourly <- TSaggregate(datRaw$long_up_cor_Avg,timestr,60,5,'mean')   # LINC, incoming LW radiation, [W m-2]
 LOUThourly <- TSaggregate(datRaw$long_dn_cor_Avg,timestr,60,5,'mean')   # LOUT, outgoing LW radiation, [W m-2]
 
-# Wind
-datRaw$WS_ms_WVc.1.[datRaw$WS_ms_WVc.1.<0] <- 0
+# Wind 
+datRaw$WS_ms_WVc.1.[datRaw$WS_ms_WVc.1.<0] <- 0     # Young Sensor
 datRaw$WS_ms_WVc.1.[datRaw$WS_ms_WVc.1.>50] <- NA
 WSPDhourly <- TSaggregate(datRaw$WS_ms_WVc.1.,timestr,60,5,'mean')   # WSPD, wind speed, [m s-1]
 WSPDmaxhourly <- TSaggregate(datRaw$WS_ms_WVc.1.,timestr,60,5,'max')   # WSPDmax, max wind speed, [m s-1]
+
+datRaw$WS_vect_ms_Avg[datRaw$WS_vect_ms_Avg<0] <- 0     # Cup anemometer, removed after 2018
+datRaw$WS_vect_ms_Avg[datRaw$WS_vect_ms_Avg>50] <- NA
+WSPD2hourly <- TSaggregate(datRaw$WS_vect_ms_Avg,timestr,60,5,'mean')   # WSPD, wind speed, [m s-1]
 
 WINDDIRhourly <- winddirmean(datRaw$WS_ms_WVc.1.,datRaw$WindDir, timestr,60,5) # WINDDIR, hourly wind direction, [deg]
 
@@ -243,7 +248,7 @@ SR50hourly <- TSaggregate(SR50_Final,timestrSR50,60,5,'mean')
 matchAWSdata <- match(TAIRhourly[,1],SR50hourly[,1])
 
 # Combine all Data
-Date <- as.Date(as.POSIXct(TAIRhourly[,1],origin='1970-01-01 +0545'))
+Date <- as.Date(as.POSIXct(TAIRhourly[,1],origin='1970-01-01'))
 Time <- strftime(as.POSIXct(TAIRhourly[,1],origin='1970-01-01'),format="%H:%M:%S")
 
 expData <- data.frame(matrix(ncol = 0, nrow = length(Date)))
@@ -257,7 +262,7 @@ expData$KINC <- KINChourly[,2]
 expData$KUPW <- KUPWhourly[,2]
 expData$LINC <- LINChourly[,2]
 expData$LOUT <- LOUThourly[,2]
-expData$WSPD <- WSPDhourly[,2]*0 # sensor does not exist anymore
+expData$WSPD <- WSPD2hourly[,2] # sensor does not exist anymore after 2018
 expData$WSPD2 <- WSPDhourly[,2]
 expData$WSPDmax <- WSPDmaxhourly[,2]
 expData$WINDDIR <- WINDDIRhourly[,2]
@@ -286,12 +291,10 @@ datRaw$RH_Avg[datRaw$RH_Avg<=0] <- NA
 RHhourly <- TSaggregate(datRaw$RH_Avg,timestr,60,5,'mean')   # RH, mean air rel humidity, [%]
 TCNR4hourly <- TSaggregate(datRaw$CNR4TC_Avg,timestr,60,5,'mean')   # TCNR4, mean CNR4 temperature, [degC]
 
+datRaw$SUp_Avg[abs(datRaw$SUp_Avg)>2000] <- NA # to catch NA values saved as -7999
+datRaw$SDn_Avg[abs(datRaw$SDn_Avg)>2000] <- NA # to catch NA values saved as -7999
 datRaw$SUp_Avg[datRaw$SUp_Avg<0]<-0
-datRaw$SDn_Avg[which(datRaw$SDn_Avg==7999)] <- NA
-datRaw$SUp_Avg[datRaw$SUp_Avg>2000] <- NA
 datRaw$SDn_Avg[datRaw$SDn_Avg<0]<-0
-datRaw$SDn_Avg[which(datRaw$SDn_Avg==7999)] <- NA
-datRaw$SDn_Avg[datRaw$SDn_Avg>datRaw$SUp_Avg] <- datRaw$SUp_Avg[datRaw$SDn_Avg>datRaw$SUp_Avg]
 KINChourly <- TSaggregate(datRaw$SUp_Avg,timestr,60,5,'mean')   # KINC, incoming SW radiation, [W m-2]
 KUPWhourly <- TSaggregate(datRaw$SDn_Avg,timestr,60,5,'mean')   # KUPW, outgoing SW radiation, [W m-2]
 LINChourly <- TSaggregate(datRaw$LUpCo_Avg,timestr,60,5,'mean')   # LINC, incoming LW radiation, [W m-2]
@@ -347,7 +350,7 @@ SR50hourly <- TSaggregate(SR50_Final,timestrSR50,60,5,'mean')
 matchAWSdata <- match(TAIRhourly[,1],SR50hourly[,1])
 
 # Combine all Data
-Date <- as.Date(as.POSIXct(TAIRhourly[,1],origin='1970-01-01 +0545'))
+Date <- as.Date(as.POSIXct(TAIRhourly[,1],origin='1970-01-01'))
 Time <- strftime(as.POSIXct(TAIRhourly[,1],origin='1970-01-01'),format="%H:%M:%S")
 
 expData <- data.frame(matrix(ncol = 0, nrow = length(Date)))

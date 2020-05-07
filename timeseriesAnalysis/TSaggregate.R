@@ -62,7 +62,7 @@ TSaggregate <- function(TS,TimStr,timStep,timShift,aggrmode){
 
     if(timShift>0){       # Version where hourly aggregates are different than simply aggregating to the full hour as given in the timestring
   # shift the time vector
-
+#browser()
   TimStr <- TimStr + 1*timShift*10*60
   hourdata <- hour(TimStr)
   #hourdata <- hourdata[-(1:timShift)]
