@@ -7,11 +7,11 @@
 #
 # Consider the corresponding code AWS_Langtang_process.R for original processing
 #
+# Author: walter immerzeel
 # Created:          2020/02/05
 # Latest Revision:  2020/02/05
 #
-# Jakob F Steiner| PhD candidate | Faculty of Geosciences | Universiteit Utrecht | Princetonlaan 8a, 3584 CB Utrecht 
-# Vening Meinesz building, room 4.30 | P.O. Box 80.115, 3508 TC Utrecht | j.f.steiner@uu.nl | www.uu.nl/staff/jfsteiner | www.mountainhydrology.org 
+# mountainhydrology group UU |  www.mountainhydrology.org 
 ################################################################################
 
 # Clear plots
