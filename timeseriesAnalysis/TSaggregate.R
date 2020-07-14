@@ -28,6 +28,8 @@
 
 TSaggregate <- function(TS,TimStr,timStep,timShift,aggrmode){
   
+  library(lubridate)
+  library(data.table)
 ########### 
   # Aggregate to 30 min timesteps
   if(timStep == 30){
