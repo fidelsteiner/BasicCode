@@ -30,7 +30,8 @@ require(zoo)
 require(lubridate)
 require(data.table)
 
-source('F:\\PHD\\Research\\EB_DCG\\DistributedEB\\Code\\subCodes\\TSaggregate.R')
+# Requires additional code: 'https://github.com/fidelsteiner/BasicCode/blob/master/timeseriesAnalysis/TSaggregate.R'
+source('.../TSaggregate.R')
 
 SR50 <- function(pathin,z_sr50,pathout,SD_reverse, mon_NoSnow){
 sr50raw <- read.csv(pathin,header = 1)

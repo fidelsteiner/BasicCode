@@ -21,7 +21,7 @@ of1 <- sum((log(qCalc) - log(qObs))^2, na.rm=T) / sum((log(qCalc) - log(mean(qCa
 
 of2 <- sum((qCalc - qObs)^2, na.rm=T) / sum((qCalc - mean(qObs, na.rm=T))^2, na.rm=T);   # 1 minus R2
 
-of3 <- 1 - sum((qObs - qCalc)^2,na.rm=T) / sum((qObs - mean(qObs,na.rm=T))^2,na.rm=T);     # NSE
+of3 <- sum((qObs - qCalc)^2,na.rm=T) / sum((qObs - mean(qObs,na.rm=T))^2,na.rm=T);     # 1 minus NSE
 
 of4 <- sqrt(1/length(qCalc)*sum((qCalc-qObs)^2,na.rm=T)); # RMSE
 
@@ -33,6 +33,7 @@ of5 <- 1/length(qCalc)*sum(qCalc-qObs,na.rm=T);  # MBE (mean biased error)
 #o.f8 = 1 - coc(1,2);
 
 f <- (of2 + of3 + of4 + of5) / 4;      # for fit with Adjustment Factor
-
+#f <- (of2 + of3)
+f <- of3
 return(f)
 }
