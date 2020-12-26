@@ -24,7 +24,7 @@ LWMod_KokSteiner <- function(Ta_data,RH_data,SWIN_data) {
     wet_cond_new <- which(RH_data>80&SWIN_data<50|RH_data>60&SWIN_data>=50)                 # wet branch of data
     
     LWMod <- Ta_data * NA
-    LW_Mod[dry_cond_new] <- -75.2802438 + 0.82201551 * RH_data[dry_cond_new] + 0.7927014 * sigma * (Ta_data[dry_cond_new]+273.15)^4
+    LWMod[dry_cond_new] <- -75.2802438 + 0.82201551 * RH_data[dry_cond_new] + 0.7927014 * sigma * (Ta_data[dry_cond_new]+273.15)^4
     LWMod[wet_cond_new] <- -212.59405573 + 1.88964724 * RH_data[wet_cond_new] + 1.05610277 * sigma * (Ta_data[wet_cond_new]+273.15)^4
 
     LWMod_HMA <- return(LWMod)
