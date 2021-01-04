@@ -92,6 +92,7 @@ mOmdTI <- function(tim,qObs,Temp,SW,debDep,lag_T,lag_S,modtype){
            #browser()
            qoptim <- function(x,Temp,SW,qObs2){ 
              qCalc  <- x[1] * debDep^x[2] * Temp
+             
              of1 <- sum((log(qCalc) - log(qObs2))^2, na.rm=T) / sum((log(qCalc) - log(mean(qCalc,na.rm=T)))^2,na.rm=T); 
              
              of2 <- sum((qCalc - qObs2)^2, na.rm=T) / sum((qCalc - mean(qObs2, na.rm=T))^2, na.rm=T);   # 1 minus R2
@@ -103,12 +104,14 @@ mOmdTI <- function(tim,qObs,Temp,SW,debDep,lag_T,lag_S,modtype){
              of5 <- 1/length(qCalc)*sum(qCalc-qObs2,na.rm=T);  # MBE (mean biased error)
              
              f <- (of3 + of4 + of5) / 3;      # for fit with Adjustment Factor
-             f <- of3            
+           
              return(f)
            }
            
-           out <- optim(par = c(0.3,-0.8,0.008,-10),  # initial guess
+           out <- optim(par = c(0.1,-0.8),  # initial guess
                         fn = qoptim,
+                        method = "L-BFGS-B",
+                        lower = c(0,-2), upper = c(0.2,0),
                         Temp = Temp,
                         qObs2 = qObs2,
                         SW = SW)
@@ -134,12 +137,14 @@ mOmdTI <- function(tim,qObs,Temp,SW,debDep,lag_T,lag_S,modtype){
     of5 <- 1/length(qCalc)*sum(qCalc-qObs2,na.rm=T);  # MBE (mean biased error)
     
     f <- (of3 + of4 + of5) / 3;      # for fit with Adjustment Factor
-    f <- of3
+
     return(f)
   }
   
-  out <- optim(par = c(0.3,-0.8,0.008,-10),  # initial guess
+  out <- optim(par = c(0.2,-0.8,-0.008,-6),  # initial guess
                fn = qoptim,
+               method = "L-BFGS-B",
+               lower = c(0,-2.5,-0.5,-15), upper = c(0.1,0,1,-0.3),
                Temp = Temp,
                qObs2 = qObs2,
                SW = SW)
