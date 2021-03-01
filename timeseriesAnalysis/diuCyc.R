@@ -9,7 +9,7 @@
 # Input:  TS              <- time series (hourly or higher temporal resolution)
 #         time            <- Datetime of timeseries as string ("2012-06-23 12:00:00 +0545")
 #
-# Necessary dependance: none
+# Necessary dependance: 'lubridate' package 
 #
 # Created:          2018/09/02
 # Latest Revision:  2019/09/02
