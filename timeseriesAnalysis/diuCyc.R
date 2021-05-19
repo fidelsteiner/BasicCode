@@ -23,6 +23,7 @@ diuCyc <- function(TS,time){
   lengthTOT <- function(x){length(x)}
   
   diuCyc_m <- aggregate(TS,list(hour(time)),median,na.rm=T)   # median values for diurnal cycle
+  diuCyc_mean <- aggregate(TS,list(hour(time)),mean,na.rm=T)   # mean values for diurnal cycle
   diuCyc_s <- aggregate(TS,list(hour(time)),sd,na.rm=T)     # standard deviation for diurnal cycle
 
   diuCyc_90 <- aggregate(TS, list(hour(time)), FUN = quantile, probs  = 0.90,na.rm=T)
@@ -32,5 +33,5 @@ diuCyc <- function(TS,time){
   diuCyc_TOT <- aggregate(TS, list(hour(time)), lengthTOT)
   diuCyc_NA <- aggregate(TS, list(hour(time)), lengthNA)
   
-  diuCyc <- data.frame(cbind(diuCyc_m,diuCyc_s,diuCyc_90,diuCyc_10,diuCyc_TOT,diuCyc_NA))
+  diuCyc <- data.frame(cbind(diuCyc_m,diuCyc_s,diuCyc_90,diuCyc_10,diuCyc_TOT,diuCyc_NA,diuCyc_mean))
 }
