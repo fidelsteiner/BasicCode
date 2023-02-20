@@ -19,10 +19,10 @@
 TSStatistics <- function(Qmeas, Qmod) { 
 
   TStats <- array(0, c(1, 5));
-  TStats[1,1] <- summary(lm(Qmeas ~ Qmod))$r.squared   # R2 of Sensible Heat Flux
+  TStats[1,1] <- summary(lm(Qmeas ~ Qmod))$r.squared   # R2
   TStats[1,2] <- sqrt(sum((Qmeas - Qmod)^2,na.rm=T) / length(which(is.na((Qmeas - Qmod)^2)==F))); #RMSE
   TStats[1,3] <- sum(Qmeas - Qmod,na.rm=T) / length(which(is.na((Qmeas - Qmod)^2)==F)) # MBE
-  TStats[1,4] <- TStats[1,2] / mean(Qmeas,na.rm=T)
+  TStats[1,4] <- TStats[1,2] / mean(Qmeas,na.rm=T) # standardized RMSE
   TStats[1,5] <- 1-sum((Qmeas - Qmod)^2,na.rm=T) / sum((Qmeas - mean(Qmeas,na.rm=T))^2,na.rm=T) # NSE
   TSStatistics <- TStats
 }
