@@ -40,4 +40,96 @@ library(devtools)
 #devtools::install_github("https://github.com/ErikKusch/KrigR")
 
 library(KrigR)
-library(KrigR)
+
+# load UIB shp file
+
+path_outlines <- 'C:\\Work\\GeospatialData\\HydroSheds\\hybas_as_lev01-12_v1c'
+fnUIBOutline <- 'hybas_as_lev08_v1c'
+
+path_output <- 'C:\\Work\\Research\\Collaborations\\HMA\\NeoshaMIT\\Output'
+path_rawdata <- 'C:\\Work\\Research\\Collaborations\\HMA\\NeoshaMIT\\BaseData\\ERA5Land'
+path_DEMdata <- 'C:\\Work\\Research\\Collaborations\\HMA\\NeoshaMIT\\BaseData\\DEMData'
+
+  
+ogrInfo(path_outlines,fnUIBOutline)
+UIB_pEXT<-readOGR(dsn=path_outlines,layer=fnUIBOutline)
+UIB_pEXT<-SpatialPolygons(UIB_pEXT@polygons,proj4string=UIB_pEXT@proj4string)
+#projection(UIB_pEXT)<-CRS("+init=epsg:4326")
+
+# Read ECMWF API KEY DATA
+ECMWF_API <- read.csv('C:\\Work\\Code\\ecmwf_API.csv')
+
+UIB_RAW_T <- download_ERA(
+  Variable = '2m_temperature',
+  Type = 'reanalysis',
+  DataSet = 'era5-land',
+  DateStart = '2017-01-01',
+  DateStop = '2017-12-31',
+  TResolution = 'day',
+  TStep = 1,
+  Extent = UIB_pEXT[19283],
+  Dir = path_rawdata,
+  API_User = ECMWF_API$ECMWF_USER,
+  API_Key = ECMWF_API$ECMWF_KEY
+)
+
+UIB_RAW_P <- download_ERA(
+  Variable = 'total_precipitation',
+  Type = 'reanalysis',
+  DataSet = 'era5-land',
+  DateStart = '2017-01-01',
+  DateStop = '2017-12-31',
+  TResolution = 'day',
+  TStep = 1,
+  Extent = UIB_pEXT[19283],
+  Dir = path_rawdata,
+  API_User = ECMWF_API$ECMWF_USER,
+  API_Key = ECMWF_API$ECMWF_KEY
+)
+
+UIB_RAW_SC <- download_ERA(
+  Variable = 'snow_cover',
+  Type = 'reanalysis',
+  DataSet = 'era5-land',
+  DateStart = '2017-01-01',
+  DateStop = '2017-01-31',
+  TResolution = 'day',
+  TStep = 1,
+  Extent = UIB_pEXT[19283],
+  Dir = path_rawdata,
+  API_User = ECMWF_API$ECMWF_USER,
+  API_Key = ECMWF_API$ECMWF_KEY
+)
+
+Covs_ls <- download_DEM(Train_ras = UIB_RAW_SC,
+                        Target_res = 0.01,
+                        Shape = UIB_pEXT[19283],
+                        Dir = path_DEMdata,
+                        Keep_Temporary = TRUE)
+
+Shisper_Krig_T <- krigR(Data = UIB_RAW_T,
+                      Covariates_coarse = Covs_ls[[1]],
+                      Covariates_fine = Covs_ls[[2]],
+                      KrigingEquation = 'ERA ~ DEM',
+                      Keep_Temporary = TRUE,
+                      Cores = 4,
+                      FileName = 'ShisperDownscaled_T.nc',
+                      Dir = path_output)
+
+Shisper_Krig_P <- krigR(Data = UIB_RAW_P,
+                      Covariates_coarse = Covs_ls[[1]],
+                      Covariates_fine = Covs_ls[[2]],
+                      KrigingEquation = 'ERA ~ DEM',
+                      Keep_Temporary = TRUE,
+                      Cores = 4,
+                      FileName = 'ShisperDownscaled_P.nc',
+                      Dir = path_output)
+
+Shisper_Krig_SC <- krigR(Data = UIB_RAW_SC,
+                        Covariates_coarse = Covs_ls[[1]],
+                        Covariates_fine = Covs_ls[[2]],
+                        KrigingEquation = 'ERA ~ DEM',
+                        Keep_Temporary = TRUE,
+                        Cores = 4,
+                        FileName = 'ShisperDownscaled_SC.nc',
+                        Dir = path_output)
