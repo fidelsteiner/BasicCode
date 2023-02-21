@@ -5,13 +5,16 @@
 #
 # ReadMe: 
 #
-# KrigR
+# Downscaling climate data (T, P, snow cover) from ERA5-Land based on HydroBasins.
+# Downscaling using the KrigR package
+# Requires ECMWF API Key and Username
 #
 # Input:
+# 1) HydroBasins (https://www.hydrosheds.org/products/hydrobasins) for domain
 # 
 #
-# Created:          2023/02/07
-# Latest Revision:  2023/02/07
+# Created:          2023/02/12
+# Latest Revision:  2023/02/21
 #
 # Jakob F Steiner | jakob@x-hydrolab.org | x-hydrolab.org 
 ################################################################################
@@ -25,32 +28,22 @@ gc()
 '&.character' <- function(...) paste(...,sep='')
 
 # packages (if not installed yet: install.packages('examplePackage')
-#library(rgdal)
-#library(rgeos)
-#library(maptools)
-#library(raster)
-#library(ggplot2)
-#library(dplyr)
-#library(ggridges)
-#library(RColorBrewer)
-#library(hydroGOF)
-
 library(devtools)
 #Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")
 #devtools::install_github("https://github.com/ErikKusch/KrigR")
-
 library(KrigR)
 
-# load UIB shp file
-
+# load basin shp file
 path_outlines <- 'C:\\Work\\GeospatialData\\HydroSheds\\hybas_as_lev01-12_v1c'
 fnUIBOutline <- 'hybas_as_lev08_v1c'
 
-path_output <- 'C:\\Work\\Research\\Collaborations\\HMA\\NeoshaMIT\\Output'
-path_rawdata <- 'C:\\Work\\Research\\Collaborations\\HMA\\NeoshaMIT\\BaseData\\ERA5Land'
-path_DEMdata <- 'C:\\Work\\Research\\Collaborations\\HMA\\NeoshaMIT\\BaseData\\DEMData'
-
+RootDir <- 'C:\\Work\\Research\\Collaborations\\HMA\\NeoshaMIT\\'
   
+path_output <- paste(RootDir&'Output')
+path_rawdata <- paste(RootDir&'BaseData\\ERA5Land')
+path_DEMdata <- paste(RootDir&'BaseData\\DEMData')
+
+# Load subcatchments
 ogrInfo(path_outlines,fnUIBOutline)
 UIB_pEXT<-readOGR(dsn=path_outlines,layer=fnUIBOutline)
 UIB_pEXT<-SpatialPolygons(UIB_pEXT@polygons,proj4string=UIB_pEXT@proj4string)
@@ -59,6 +52,7 @@ UIB_pEXT<-SpatialPolygons(UIB_pEXT@polygons,proj4string=UIB_pEXT@proj4string)
 # Read ECMWF API KEY DATA
 ECMWF_API <- read.csv('C:\\Work\\Code\\ecmwf_API.csv')
 
+# Load Temperature data
 UIB_RAW_T <- download_ERA(
   Variable = '2m_temperature',
   Type = 'reanalysis',
